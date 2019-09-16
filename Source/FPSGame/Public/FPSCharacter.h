@@ -65,6 +65,8 @@ public:
 	/** Returns Mesh1P subobject **/
 	USkeletalMeshComponent* GetMesh1P() const { return Mesh1PComponent; }
 
+	UPROPERTY(BlueprintReadOnly,Category = "Gameplay")
+	bool bIsCarryingObjective = false;
 	/** Returns FirstPersonCameraComponent subobject **/
 	UCameraComponent* GetFirstPersonCameraComponent() const { return CameraComponent; }
 
