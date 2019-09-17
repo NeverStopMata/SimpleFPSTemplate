@@ -12,7 +12,7 @@ class UCameraComponent;
 class AFPSProjectile;
 class USoundBase;
 class UAnimSequence;
-
+class UPawnNoiseEmitterComponent;
 
 UCLASS()
 class AFPSCharacter : public ACharacter
@@ -49,6 +49,8 @@ public:
 	UAnimSequence* FireAnimation;
 
 protected:
+	UPROPERTY(VisibleAnywhere, Category = "Component")
+	UPawnNoiseEmitterComponent* NoiseEmitterComp;
 	
 	/** Fires a projectile. */
 	void Fire();

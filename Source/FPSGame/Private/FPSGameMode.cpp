@@ -14,7 +14,7 @@ AFPSGameMode::AFPSGameMode()
 	// use our custom HUD class
 	HUDClass = AFPSHUD::StaticClass();
 }
-void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
+void AFPSGameMode::CompleteMission(APawn* InstigatorPawn,bool bIsSuccessful)
 {
 	if (InstigatorPawn)
 	{
@@ -39,5 +39,5 @@ void AFPSGameMode::CompleteMission(APawn* InstigatorPawn)
 			UE_LOG(LogTemp, Warning, TEXT("no viewpoint actor found in the scene"));
 		}
 	}
-	OnMissionCompleted(InstigatorPawn);
+	OnMissionCompleted(InstigatorPawn, bIsSuccessful);
 }
