@@ -45,6 +45,21 @@ protected:
 	void SetGuardState(EGuardState newState);
 	UFUNCTION(BlueprintImplementableEvent,Category = "AI")
 	void OnStateChanged(EGuardState newState);
+
+	UPROPERTY(EditInstanceOnly, Category = "AI")
+	bool bPatrol;
+	
+	UPROPERTY(EditInstanceOnly,  Category = "AI", meta = (EditCondition = "bPatrol"))
+	AActor* FirstTargetPoint;
+
+	UPROPERTY(EditInstanceOnly, Category = "AI", meta = (EditCondition = "bPatrol"))
+	AActor* SecondTargetPoint;
+
+	AActor* CurrentTargetPoint;
+
+	void MoveTowardsNextTarget();
+	void MoveTowardsCurrentTarget();
+
 public:	
 	// Called every frame
 	virtual void Tick(float DeltaTime) override;

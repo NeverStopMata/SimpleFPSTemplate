@@ -9,6 +9,7 @@
 #include "FPSGameMode.h"
 #include "Kismet/GameplayStatics.h"
 #include "Engine/World.h"
+#include "Blueprint/AIBlueprintHelperLibrary.h"
 // Sets default values
 AFPSAI_Guard::AFPSAI_Guard()
 {
@@ -25,13 +26,25 @@ void AFPSAI_Guard::BeginPlay()
 {
 	Super::BeginPlay();
 	OriginalRotation = GetActorRotation();	
+	if (bPatrol)
+	{
+		MoveTowardsNextTarget();
+	}
 }
 
 // Called every frame
 void AFPSAI_Guard::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
-
+	if (CurrentTargetPoint)
+	{
+		FVector delta = GetActorLocation() - CurrentTargetPoint->GetActorLocation();
+		float distance = delta.Size();
+		if (distance < 200)
+		{
+			MoveTowardsNextTarget();
+		}
+	}
 }
 
 void AFPSAI_Guard::OnSeePawn(APawn* InstigatorPawn)
@@ -53,6 +66,11 @@ void AFPSAI_Guard::OnSeePawn(APawn* InstigatorPawn)
 	{
 		GM->CompleteMission(InstigatorPawn, false);
 	}
+	AController* controller = GetController();
+	if (controller)
+	{
+		controller->StopMovement();
+	}
 		
 }
 void AFPSAI_Guard::OnHearNoise(APawn* InstigatorPawn, const FVector& Location, float Volume)
@@ -71,12 +89,26 @@ void AFPSAI_Guard::OnHearNoise(APawn* InstigatorPawn, const FVector& Location, f
 	GetWorldTimerManager().ClearTimer(TimerHandle_ResetOrientation);
 	GetWorldTimerManager().SetTimer(TimerHandle_ResetOrientation, this, &AFPSAI_Guard::ResetOrientation, 3.0f);
 	SetGuardState(EGuardState::Suspicious);
+	AController* controller = GetController();
+	if (controller)
+	{
+		controller->StopMovement();
+	}
 }
 
 
 void AFPSAI_Guard::ResetOrientation()
 {
+	if (GuardState == EGuardState::Alerted)
+	{
+		return;
+	}
 	SetActorRotation(OriginalRotation);
+	SetGuardState(EGuardState::Idle);
+	if (bPatrol)
+	{
+		MoveTowardsCurrentTarget();
+	}
 }
 
 void AFPSAI_Guard::SetGuardState(EGuardState newState)
@@ -87,4 +119,29 @@ void AFPSAI_Guard::SetGuardState(EGuardState newState)
 	}
 	GuardState = newState;
 	OnStateChanged(newState);
+}
+
+void AFPSAI_Guard::MoveTowardsNextTarget()
+{
+	if (CurrentTargetPoint == SecondTargetPoint || CurrentTargetPoint == nullptr)
+	{
+		CurrentTargetPoint = FirstTargetPoint;
+	}
+	else if (CurrentTargetPoint == FirstTargetPoint)
+	{
+		CurrentTargetPoint = SecondTargetPoint;
+	}
+	else
+	{
+		UE_LOG(LogTemp, Warning, TEXT("current target point is invalid"));
+	}
+	UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), CurrentTargetPoint);
+}
+
+void AFPSAI_Guard::MoveTowardsCurrentTarget()
+{
+	if (CurrentTargetPoint)
+	{
+		UAIBlueprintHelperLibrary::SimpleMoveToActor(GetController(), CurrentTargetPoint);
+	}
 }
